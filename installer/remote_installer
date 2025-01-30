@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-#set -x
+set -x
 
-tmp_dir='/tmp/tmp.q4mxgTqeoy.nixos-deploy'
+tmp_dir="/tmp/tmp.DeLJDaBdS8.nixos-deploy"
 #MYDEV# Create a temp directory for generated host keys
 #MYDEVtmp_dir=$(mktemp -d --suffix=.nixos-deploy)
 #MYDEVmkdir -p $tmp_dir/{deploy,target}
@@ -73,15 +73,30 @@ pub_key="$tmp_dir/deploy/id_ed25519.pub"
 #MYDEV  echo $(cat $pub_key) > /root/.ssh/authorized_keys;\
 #MYDEV  nix-env -f '<nixpkgs>' -iA rsync git"
 
+# Copy repos
+#MYDEVgit clone git@github.com:SsShigZzZ/nix-config.git $tmp_dir/target/nix-config/.
 
 # Check if disko file exists for the hostname specified
-disko_file="$script_dir/../nixos/$target_hostname/disko.nix"
+disko_file="$tmp_dir/target/nix-config/nixos/$target_hostname/disko.nix"
 if ! [ -f $disko_file ]; then
   echo "No disko file found; exiting"
   exit 1
 fi
+cp $disko_file $tmp_dir/target/.
 
-rsync -arvP -e "ssh -i $prv_key" $disko_file root@$target_host:/tmp/.
-ssh -i $prv_key 192.168.10.50 -l root
-#rsync -vP --chmod=644 --rsync-path="mkdir -p /root/.ssh/ && rsync" \
-#  $master_id_file.pub root@$target_host:/root/.ssh/
+# Copy files over and run remote script
+rsync -aP -e "ssh -i $prv_key" $tmp_dir/target/* root@$target_host:/tmp/.
+rsync -aP -e "ssh -i $prv_key" $script_dir/0_remote_script root@$target_host:/tmp/nix-config/installer/. #MYEND
+ssh -i $prv_key $target_host -l root "/tmp/nix-config/installer/0_remote_script"
+
+#git clone $_NIXOS_CONFIG $_MNT_DIR/etc/nixos
+#
+## Build
+##nixos-install --root $_MNT_DIR --no-root-password --flake ${_NIXOS_CONFIG}#$_HOSTNAME
+#nixos-install --root $_MNT_DIR --flake ${_NIXOS_CONFIG}#$_HOSTNAME
+#
+### Reboot
+#reboot
+#
+##rsync -vP --chmod=644 --rsync-path="mkdir -p /root/.ssh/ && rsync" \
+##  $master_id_file.pub root@$target_host:/root/.ssh/

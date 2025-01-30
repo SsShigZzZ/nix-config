@@ -2,6 +2,8 @@
 
   imports = [
     ../common.nix
+    ./disko.nix
+    ./hardware-configuration.nix
   ];
 
   my = {
@@ -11,7 +13,6 @@
         cpu = "vm-amd";
 #        gpu = "nvidia";
         storage = {
-          layout = "workstation";
           btrfs = {
             enable = true;
             autoscrub = true;
