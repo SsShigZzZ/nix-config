@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+#set -x
+
+tmp_dir='/tmp/tmp.q4mxgTqeoy.nixos-deploy'
+#MYDEV# Create a temp directory for generated host keys
+#MYDEVtmp_dir=$(mktemp -d --suffix=.nixos-deploy)
+#MYDEVmkdir -p $tmp_dir/{deploy,target}
+#MYDEV
+#MYDEV# Cleanup temporary directory on exit
+#MYDEVfunction cleanup() {
+#MYDEV	rm -rf "$tmp_dir"
+#MYDEV}
+#MYDEVtrap cleanup exit
+
+# Initialization
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# Help / Usage
+function print_usage_and_exit() {
+  cat <<EOF
+Usage:
+  $0 -t <target_host> -n <hostname>
+
+Arguments:
+  [ -t | --target ]
+    The target hostname / IP address
+  [ -n | --hostname ]
+    The desired hostname / nix host configuration
+
+Options:
+  [ -d | --disko ]
+    The disko layout
+    Required if there is no default <hostname>.nix in the installer directory
+EOF
+exit 0
+}
+
+# Parse arguments
+arg_parse=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -h|--help)
+      print_usage_and_exit
+    ;;
+    -t|--target)
+      target_host=$2
+      shift
+      shift
+    ;;
+    -n|--hostname)
+      target_hostname=$2
+      shift
+      shift
+    ;;
+    *)
+      echo 'Invalid agument'
+      exit 1
+    ;;
+  esac
+done
+set -- "${arg_parse[@]}"
+
+# Ensure target and hostname are set
+[ $target_host ] && [ $target_hostname ] || print_usage_and_exit
+
+# Create an SSH key to use for deployment automation
+prv_key="$tmp_dir/deploy/id_ed25519"
+pub_key="$tmp_dir/deploy/id_ed25519.pub"
+#MYDEVssh-keygen -t ed25519 -f $prv_key -C "$USER@$HOSTNAME" -N ""
+#MYDEVssh-keygen -R $target_host
+#MYDEVssh $target_host -l root -i $prv_key -o StrictHostKeyChecking=no "\
+#MYDEV  mkdir -p /root/.ssh;\
+#MYDEV  echo $(cat $pub_key) > /root/.ssh/authorized_keys;\
+#MYDEV  nix-env -f '<nixpkgs>' -iA rsync git"
+
+
+# Check if disko file exists for the hostname specified
+disko_file="$script_dir/../nixos/$target_hostname/disko.nix"
+if ! [ -f $disko_file ]; then
+  echo "No disko file found; exiting"
+  exit 1
+fi
+
+rsync -arvP -e "ssh -i $prv_key" $disko_file root@$target_host:/tmp/.
+ssh -i $prv_key 192.168.10.50 -l root
+#rsync -vP --chmod=644 --rsync-path="mkdir -p /root/.ssh/ && rsync" \
+#  $master_id_file.pub root@$target_host:/root/.ssh/
