@@ -74,7 +74,7 @@ pub_key="$tmp_dir/deploy/id_ed25519.pub"
 #MYDEV  nix-env -f '<nixpkgs>' -iA rsync git"
 
 # Copy repos
-#MYDEVgit clone git@github.com:SsShigZzZ/nix-config.git $tmp_dir/target/nix-config/.
+git clone git@github.com:SsShigZzZ/nix-config.git $tmp_dir/target/nix-config/.
 
 # Check if disko file exists for the hostname specified
 disko_file="$tmp_dir/target/nix-config/nixos/$target_hostname/disko.nix"
@@ -84,9 +84,11 @@ if ! [ -f $disko_file ]; then
 fi
 cp $disko_file $tmp_dir/target/.
 
+# Write params file
+echo "_hostname=$target_hostname" | tee -a $tmp_dir/target/params
+
 # Copy files over and run remote script
 rsync -aP -e "ssh -i $prv_key" $tmp_dir/target/* root@$target_host:/tmp/.
-rsync -aP -e "ssh -i $prv_key" $script_dir/0_remote_script root@$target_host:/tmp/nix-config/installer/. #MYEND
 ssh -i $prv_key $target_host -l root "/tmp/nix-config/installer/0_remote_script"
 
 #git clone $_NIXOS_CONFIG $_MNT_DIR/etc/nixos
