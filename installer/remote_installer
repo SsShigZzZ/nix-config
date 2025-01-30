@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 set -x
 
-tmp_dir="/tmp/tmp.DeLJDaBdS8.nixos-deploy"
-#MYDEV# Create a temp directory for generated host keys
-#MYDEVtmp_dir=$(mktemp -d --suffix=.nixos-deploy)
-#MYDEVmkdir -p $tmp_dir/{deploy,target}
-#MYDEV
-#MYDEV# Cleanup temporary directory on exit
-#MYDEVfunction cleanup() {
-#MYDEV	rm -rf "$tmp_dir"
-#MYDEV}
-#MYDEVtrap cleanup exit
+# Create a temp directory for generated host keys
+tmp_dir=$(mktemp -d --suffix=.nixos-deploy)
+mkdir -p $tmp_dir/{deploy,target}
 
-# Initialization
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# Cleanup temporary directory on exit
+function cleanup() {
+	rm -rf "$tmp_dir"
+}
+
+#trap cleanup exit
 
 # Help / Usage
 function print_usage_and_exit() {
@@ -66,15 +63,15 @@ set -- "${arg_parse[@]}"
 # Create an SSH key to use for deployment automation
 prv_key="$tmp_dir/deploy/id_ed25519"
 pub_key="$tmp_dir/deploy/id_ed25519.pub"
-#MYDEVssh-keygen -t ed25519 -f $prv_key -C "$USER@$HOSTNAME" -N ""
-#MYDEVssh-keygen -R $target_host
-#MYDEVssh $target_host -l root -i $prv_key -o StrictHostKeyChecking=no "\
-#MYDEV  mkdir -p /root/.ssh;\
-#MYDEV  echo $(cat $pub_key) > /root/.ssh/authorized_keys;\
-#MYDEV  nix-env -f '<nixpkgs>' -iA rsync git"
+ssh-keygen -t ed25519 -f $prv_key -C "$USER@$HOSTNAME" -N ""
+ssh-keygen -R $target_host
+ssh $target_host -l root -i $prv_key -o StrictHostKeyChecking=no "\
+  mkdir -p /root/.ssh;\
+  echo $(cat $pub_key) > /root/.ssh/authorized_keys;\
+  nix-env -f '<nixpkgs>' -iA rsync git"
 
 # Copy repos
-git clone git@github.com:SsShigZzZ/nix-config.git $tmp_dir/target/nix-config/.
+git clone git@github.com:SsShigZzZ/nix-config.git $tmp_dir/target/nix-config
 
 # Check if disko file exists for the hostname specified
 disko_file="$tmp_dir/target/nix-config/nixos/$target_hostname/disko.nix"
@@ -82,7 +79,6 @@ if ! [ -f $disko_file ]; then
   echo "No disko file found; exiting"
   exit 1
 fi
-cp $disko_file $tmp_dir/target/.
 
 # Write params file
 echo "_hostname=$target_hostname" | tee -a $tmp_dir/target/params

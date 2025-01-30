@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-#sudo nix --experimental-features 'nix-command flakes' \
-#  run github:nix-community/disko -- --mode disko /tmp/disko.nix
-
 source /tmp/params
-echo $_hostname
+
+sudo nix --experimental-features 'nix-command flakes' \
+  run github:nix-community/disko -- --mode disko \
+  /tmp/nix-config/nixos/$_hostname/disko.nix
+
