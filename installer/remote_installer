@@ -3,6 +3,9 @@ set -x
 
 # Standard vars
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+encryption_passphrase="changeme"
+nix_config_repo="git@github.com:SsShigZzZ/nix-config.git"
+nix_secret_repo="git@github.com:SsShigZzZ/nix-secrets.git"
 
 # Cleanup temporary directory on exit
 function cleanup() {
@@ -115,10 +118,12 @@ ssh-keygen -R $target_host
 ssh $target_host -l root -i $deploy_prv_key -o StrictHostKeyChecking=no "\
   mkdir -p /root/.ssh;\
   echo $(cat $deploy_pub_key) > /root/.ssh/authorized_keys;\
-  nix-env -f '<nixpkgs>' -iA rsync git"
+  nix-env -f '<nixpkgs>' -iA rsync git jq"
 
 # Write params file
 echo "target_hostname=$target_hostname" | tee -a $tmp_dir/target/params
+echo "nix_config_repo=$nix_config_repo" | tee -a $tmp_dir/target/params
+echo "nix_secret_repo=$nix_secret_repo" | tee -a $tmp_dir/target/params
 
 # Include required files
 cp $disko_file \
@@ -128,6 +133,7 @@ cp $disko_file \
 # Copy files over
 ssh_run "rm -rf /tmp/{target,sync,private}"
 my_rsync $tmp_dir/target root@$target_host:/tmp/.
+ssh_run "echo $encryption_passphrase | tee -a /tmp/encryption_passphrase"
 
 ### SSH keys and github access
 # Script to create SSH keys

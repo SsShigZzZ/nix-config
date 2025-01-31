@@ -11,14 +11,10 @@ in
         content = {
           type = "gpt";
           partitions = {
-            boot = {
-              name = "boot";
-              size = "1M";
-              type = "EF02";
-            };
             esp = {
               name = "ESP";
-              size = "500M";
+              label = "EFI";
+              size = "1024M";
               type = "EF00";
               content = {
                 type = "filesystem";
@@ -34,7 +30,7 @@ in
                 type = "luks";
                 name = "pool0_disk0";
                 extraOpenArgs = [ "--allow-discards" ];
-                passwordFile = "/tmp/secret.key"; # Interactive
+                passwordFile = "/tmp/encryption_passphrase";
                 content = {
                   type = "lvm_pv";
                   vg = "vg0";
