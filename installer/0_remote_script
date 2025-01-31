@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-source /tmp/params
+source /tmp/target/params
 
-sudo nix --experimental-features 'nix-command flakes' \
-  run github:nix-community/disko -- --mode disko \
-  /tmp/nix-config/nixos/$_hostname/disko.nix
-
+mkdir /tmp/{sync,private}
+ssh-keygen -t ed25519 -f /tmp/private/id_ed25519 -C $target_hostname -N ""
+cp /tmp/private/id_ed25519.pub /tmp/sync/.

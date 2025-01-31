@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+source /tmp/target/params
+
+# Format the disks with disko
+sudo nix --experimental-features 'nix-command flakes' \
+  run github:nix-community/disko -- --mode disko /tmp/target/disko.nix
+
+

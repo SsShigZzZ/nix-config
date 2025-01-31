@@ -27,12 +27,18 @@ in
                 extraArgs = ["-nboot"];
               };
             };
-            root = {
-              name = "root";
+            luks = {
+              label = "encrypted" ;
               size = "100%";
               content = {
-                type = "lvm_pv";
-                vg = "vg0";
+                type = "luks";
+                name = "pool0_disk0";
+                extraOpenArgs = [ "--allow-discards" ];
+                passwordFile = "/tmp/secret.key"; # Interactive
+                content = {
+                  type = "lvm_pv";
+                  vg = "vg0";
+                };
               };
             };
           };

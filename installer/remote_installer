@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 set -x
 
-# Create a temp directory for generated host keys
-tmp_dir=$(mktemp -d --suffix=.nixos-deploy)
-mkdir -p $tmp_dir/{deploy,target}
+# Standard vars
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Cleanup temporary directory on exit
 function cleanup() {
 	rm -rf "$tmp_dir"
 }
 
-#trap cleanup exit
+function my_rsync() {
+  rsync -aP -e "ssh -i $deploy_prv_key" $@
+}
+
+function ssh_run() {
+  ssh -i $deploy_prv_key $target_host -l root $@
+}
 
 # Help / Usage
 function print_usage_and_exit() {
@@ -23,6 +28,10 @@ Arguments:
     The target hostname / IP address
   [ -n | --hostname ]
     The desired hostname / nix host configuration
+  [ -f | --tokenfile ]
+    The token file containing a valid github token with the following scopes:
+      - Read / write keys
+      - Read / write repos
 
 Options:
   [ -d | --disko ]
@@ -49,6 +58,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
     ;;
+    -f|--tokenfile)
+      token_file=$2
+      shift
+      shift
+    ;;
     *)
       echo 'Invalid agument'
       exit 1
@@ -56,36 +70,80 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 set -- "${arg_parse[@]}"
+trap cleanup exit
 
+### Preflight checks
 # Ensure target and hostname are set
-[ $target_host ] && [ $target_hostname ] || print_usage_and_exit
+[ $target_host ] && [ $target_hostname ] && [ $token_file ] ||
+  print_usage_and_exit
 
-# Create an SSH key to use for deployment automation
-prv_key="$tmp_dir/deploy/id_ed25519"
-pub_key="$tmp_dir/deploy/id_ed25519.pub"
-ssh-keygen -t ed25519 -f $prv_key -C "$USER@$HOSTNAME" -N ""
-ssh-keygen -R $target_host
-ssh $target_host -l root -i $prv_key -o StrictHostKeyChecking=no "\
-  mkdir -p /root/.ssh;\
-  echo $(cat $pub_key) > /root/.ssh/authorized_keys;\
-  nix-env -f '<nixpkgs>' -iA rsync git"
-
-# Copy repos
-git clone git@github.com:SsShigZzZ/nix-config.git $tmp_dir/target/nix-config
+# Check github token exists
+if ! [ -f $token_file ]; then
+  echo "No token file found"
+  print_usage_and_exit
+fi
 
 # Check if disko file exists for the hostname specified
-disko_file="$tmp_dir/target/nix-config/nixos/$target_hostname/disko.nix"
+disko_file="$script_dir/../nixos/$target_hostname/disko.nix"
 if ! [ -f $disko_file ]; then
   echo "No disko file found; exiting"
   exit 1
 fi
 
-# Write params file
-echo "_hostname=$target_hostname" | tee -a $tmp_dir/target/params
+# Check github token is valid
+github_token=$(cat $token_file)
+while ! [[ $(curl -s -o /dev/null -I -w "%{http_code}" -H "Authorization: token $github_token" \
+https://api.github.com/user/keys) -ne "401" ]]; do
+	read -p "Enter valid personal access token or type 'EXIT' to cancel: "
+	github_token=$REPLY
+	if [[ $github_token == "EXIT" ]]; then
+    echo "Exiting.."
+    exit 1
+	fi
+done
 
-# Copy files over and run remote script
-rsync -aP -e "ssh -i $prv_key" $tmp_dir/target/* root@$target_host:/tmp/.
-ssh -i $prv_key $target_host -l root "/tmp/nix-config/installer/0_remote_script"
+### Directories and files
+# Create a temp directory structure for file transfers
+tmp_dir=$(mktemp -d --suffix=.nixos-deploy)
+mkdir -p $tmp_dir/{deploy,target,sync}
+
+# Create an SSH key to use for deployment automation
+deploy_prv_key="$tmp_dir/deploy/id_ed25519"
+deploy_pub_key="$tmp_dir/deploy/id_ed25519.pub"
+ssh-keygen -t ed25519 -f $deploy_prv_key -C "$USER@$HOSTNAME" -N ""
+ssh-keygen -R $target_host
+ssh $target_host -l root -i $deploy_prv_key -o StrictHostKeyChecking=no "\
+  mkdir -p /root/.ssh;\
+  echo $(cat $deploy_pub_key) > /root/.ssh/authorized_keys;\
+  nix-env -f '<nixpkgs>' -iA rsync git"
+
+# Write params file
+echo "target_hostname=$target_hostname" | tee -a $tmp_dir/target/params
+
+# Include required files
+cp $disko_file \
+  $script_dir/*remote_script \
+  $tmp_dir/target/.
+
+# Copy files over
+ssh_run "rm -rf /tmp/{target,sync,private}"
+my_rsync $tmp_dir/target root@$target_host:/tmp/.
+
+### SSH keys and github access
+# Script to create SSH keys
+ssh_run "/tmp/target/0_remote_script"
+my_rsync root@$target_host:/tmp/sync $tmp_dir/
+
+# Grant public key access to github
+github_pubkey_data=$(cat $tmp_dir/sync/id_ed25519.pub)
+github_pubkey_title="nixos-${target_hostname}-$(date +%s)"
+curl -H "Authorization: token $github_token" --data \
+	"{\"title\":\"$github_pubkey_title\",\"key\":\"$github_pubkey_data\"}" \
+	https://api.github.com/user/keys
+
+### Base image installation
+ssh_run "/tmp/target/1_remote_script"
+
 
 #git clone $_NIXOS_CONFIG $_MNT_DIR/etc/nixos
 #
@@ -98,3 +156,4 @@ ssh -i $prv_key $target_host -l root "/tmp/nix-config/installer/0_remote_script"
 #
 ##rsync -vP --chmod=644 --rsync-path="mkdir -p /root/.ssh/ && rsync" \
 ##  $master_id_file.pub root@$target_host:/root/.ssh/
+read
