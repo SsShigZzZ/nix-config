@@ -32,8 +32,8 @@ in
           noto-fonts
           noto-fonts-cjk-sans
           noto-fonts-emoji
-          nerdfonts.fira-code
-          nerdfonts.hack
+          nerd-fonts.fira-code
+          nerd-fonts.hack
         ];
       };
     };
