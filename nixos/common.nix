@@ -36,7 +36,7 @@ in
       trusted-users = [ "root" "@wheel" ];
     };
 
-    package = pkgs.nixFlakes;
+    package = pkgs.nixVersions.stable;
     registry = lib.mapAttrs (_: value: { flake = value; }) inputs;
     nixPath = [ "nixpkgs=${inputs.nixpkgs.outPath}" ];
   };
