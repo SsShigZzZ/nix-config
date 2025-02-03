@@ -27,6 +27,10 @@ fi
 mkdir /mnt/etc/nixos
 GIT_SSH_COMMAND="ssh -i /tmp/private/id_ed25519 -o IdentitiesOnly=yes" git clone $nix_config_repo /mnt/etc/nixos/
 
+# Collect garbage in case tmpfs isn't too big
+nix-collect-garbage
+
 # Install
+nixos-generate-config --root /mnt
 nixos-install --root /mnt --no-root-password \
   --flake /mnt/etc/nixos/#$target_hostname
