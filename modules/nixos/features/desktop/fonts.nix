@@ -46,12 +46,8 @@ in
         noto-fonts
         noto-fonts-cjk-sans
         noto-fonts-emoji
-        (nerdfonts.override {
-          fonts = [
-            "FiraCode"
-            "Hack"
-          ];
-        })
+        nerdfonts.fira-code
+        nerdfonts.hack
       ];
 
       fontconfig = mkIf desktop.enable {
