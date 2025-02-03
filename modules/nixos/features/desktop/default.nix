@@ -26,7 +26,6 @@
     hardware = {
       opengl = mkIf (config.my.host.features.desktop.acceleration) {
         enable = mkDefault true;
-        driSupport = mkDefault true;
         driSupport32Bit = mkDefault true;
       };
     };
