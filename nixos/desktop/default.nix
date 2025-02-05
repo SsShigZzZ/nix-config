@@ -6,7 +6,7 @@
 
   my = {
     host = {
-#      role = "desktop";
+      role = "server";
       hardware = {
         cpu = "vm-amd";
 #        gpu = "nvidia";
