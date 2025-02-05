@@ -26,7 +26,7 @@ in
     networking = {
       hostName = config.my.host.system.network.hostname;
       domain = mkDefault "${myvars.domain}";
-      useDHCP = mkDefault "true";
+      useDHCP = mkDefault true;
 
       networkmanager = mkIf (role == "laptop" || role == "desktop") {
         enable = mkDefault true;
