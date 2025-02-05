@@ -53,7 +53,7 @@ in
 
   system = {
     autoUpgrade.enable = mkDefault false;
-    stateVersion = mkDefault "24.05";
+    stateVersion = mkDefault "24.11";
   };
 
   environment = {
