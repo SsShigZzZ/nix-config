@@ -2,7 +2,6 @@
 
   imports = [
     ../common.nix
-    ./disko.nix
   ];
 
   my = {
