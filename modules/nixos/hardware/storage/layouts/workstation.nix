@@ -16,8 +16,8 @@ in
           "sd_mod"
           "sr_mod"
         ];
-        luks.devices."encrypted" = {
-          device = "/dev/disk/by-label/encrypted";
+        luks.devices."pool0_disk0" = {
+          device = "/dev/disk/by-label/pool0_disk0";
           allowDiscards = mkDefault true;
           bypassWorkqueues = mkDefault true;
         };
