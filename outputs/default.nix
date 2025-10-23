@@ -1,4 +1,4 @@
-{ self, darwin, nixpkgs, home-manager, ... }@inputs: let
+{ self, darwin, nixpkgs, home-manager, disko, ... }@inputs: let
   inherit (self) outputs;
   inherit (inputs.nixpkgs) lib;
   myvars = {
