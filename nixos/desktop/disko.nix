@@ -28,7 +28,7 @@ in
               size = "100%";
               content = {
                 type = "luks";
-                name = "pool0_disk0";
+                name = "encrypted";
                 extraOpenArgs = [ "--allow-discards" ];
                 passwordFile = "/tmp/encryption_passphrase";
                 content = {
