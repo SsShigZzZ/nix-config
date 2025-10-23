@@ -23,13 +23,15 @@ if [[ "$real_github_fingerprint" == "SHA256:$good_github_fingerprint" ]]; then
   cat /tmp/githubKey | tee -a ~/.ssh/known_hosts
 fi
 
-## Collect garbage in case tmpfs isn't too big
-#nix-collect-garbage
+## Collect garbage before building the system since we make a lot of junk
+nix-collect-garbage
 
 # Get the repo
 mkdir /mnt/etc/nixos
 #nix-env -f '<nixpkgs>' -iA git
 GIT_SSH_COMMAND="ssh -i /tmp/private/id_ed25519 -o IdentitiesOnly=yes" git clone $nix_config_repo /mnt/etc/nixos/
+
+echo 'changeme_again' > /tmp/encryption_passphrase
 
 # Install
 #nixos-generate-config --root /mnt
