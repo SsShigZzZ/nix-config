@@ -7,7 +7,6 @@ source /tmp/target/params
 sudo nix --experimental-features 'nix-command flakes' \
   run github:nix-community/disko -- --mode disko /tmp/target/disko.nix
 
-# 
 # Find good github fingerprints with https
 good_github_fingerprint=$(curl -s https://api.github.com/meta | \
   jq ."ssh_key_fingerprints" | awk -F\" '/ED25519/{print $4}')

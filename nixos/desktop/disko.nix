@@ -24,7 +24,7 @@ in
               };
             };
             luks = {
-              label = "encrypted" ;
+              label = "LVM" ;
               size = "100%";
               content = {
                 type = "luks";
@@ -35,6 +35,7 @@ in
                   type = "lvm_pv";
                   vg = "vg0";
                 };
+                extraArgs = "-L pool0_disk0";
               };
             };
           };
