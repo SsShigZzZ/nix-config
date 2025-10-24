@@ -16,8 +16,8 @@ in
           "sd_mod"
           "sr_mod"
         ];
-        luks.devices."pool0_disk0" = {
-          device = "/dev/disk/by-label/pool0_disk0";
+        luks.devices."LVM" = {
+          device = "/dev/disk/by-partlabel/LVM";
           allowDiscards = mkDefault true;
           bypassWorkqueues = mkDefault true;
         };

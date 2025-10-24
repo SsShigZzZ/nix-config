@@ -28,14 +28,13 @@ in
               size = "100%";
               content = {
                 type = "luks";
-                name = "pool0_disk0";
+                name = "LVM";
                 extraOpenArgs = [ "--allow-discards" ];
                 passwordFile = "/tmp/encryption_passphrase";
                 content = {
                   type = "lvm_pv";
                   vg = "vg0";
                 };
-                extraArgs = ["-L pool0_disk0"];
               };
             };
           };
