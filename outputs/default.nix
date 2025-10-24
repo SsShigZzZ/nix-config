@@ -39,7 +39,6 @@ in {
       };
       modules = [
         ../nixos/desktop
-        disko.nixosModules.disko
         home-manager.nixosModules.home-manager
         {
           home-manager = {
