@@ -180,7 +180,7 @@ function nixos_anywhere() {
 	fi
 
 	# --extra-files here picks up the ssh host key we generated earlier and puts it onto the target machine
-	SHELL=/bin/sh nix run github:nix-community/nixos-anywhere -- \
+	SHELL=/bin/sh nix --extra-experimental-features nix-command --extra-experimental-features flakes run github:nix-community/nixos-anywhere -- \
 		--ssh-port "$ssh_port" \
 		--post-kexec-ssh-port "$ssh_port" \
 		--extra-files "$temp" \

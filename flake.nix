@@ -48,18 +48,18 @@
         }) (builtins.attrNames (builtins.readDir ./hosts/nixos))
       );
 
-      darwinConfigurations = builtins.listToAttrs (
-        map (host: {
-          name = host;
-          value = nix-darwin.lib.darwinSystem {
-            specialArgs = {
-              inherit inputs outputs lib;
-              isDarwin = true;
-            };
-            modules = [ ./hosts/darwin/${host} ];
-          };
-        }) (builtins.attrNames (builtins.readDir ./hosts/darwin))
-      );
+      #darwinConfigurations = builtins.listToAttrs (
+      #  map (host: {
+      #    name = host;
+      #    value = nix-darwin.lib.darwinSystem {
+      #      specialArgs = {
+      #        inherit inputs outputs lib;
+      #        isDarwin = true;
+      #      };
+      #      modules = [ ./hosts/darwin/${host} ];
+      #    };
+      #  }) (builtins.attrNames (builtins.readDir ./hosts/darwin))
+      #);
 
       #
       # ========= Packages =========
