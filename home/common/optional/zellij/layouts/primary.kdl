@@ -1,0 +1,94 @@
+layout {
+    cwd "$HOME"
+    tab name="1 TA_TODO" hide_floating_panes=true {
+        pane size=1 borderless=true {
+            plugin location="compact-bar"
+        }
+        pane command="nvim" cwd="$HOME/src/abbot-wiki" {
+            args "TA_TODO.md"
+            start_suspended false
+        }
+    }
+    tab name="2 Introdus" hide_floating_panes=true {
+        pane size=1 borderless=true {
+            plugin location="compact-bar"
+        }
+        pane split_direction="vertical" {
+            pane command="nvim" cwd="$HOME/src/nix/introdus" size="60%" {
+                start_suspended false
+            }
+            pane size="40%" {
+                pane cwd="$HOME/src/nix/introdus" size="75%" {
+                }
+                pane command="just" cwd="$HOME/src/nix/introdus" size="25%" {
+                    args "rebuild"
+                    start_suspended true
+                }
+            }
+        }
+        floating_panes {
+            pane cwd="$HOME/src/nix/introdus" {
+                height 44
+                width 173
+                x 87
+                y 23
+            }
+        }
+    }
+    tab name="3 Nix-Config"  hide_floating_panes=true {
+        pane size=1 borderless=true {
+            plugin location="compact-bar"
+        }
+        pane split_direction="vertical" {
+            pane focus=true command="nvim" cwd="$HOME/src/nix/nix-config" size="60%" {
+                start_suspended false
+            }
+            pane size="40%" {
+                pane cwd="src/nix/nix-config" size="75%" {
+                }
+                pane command="just" cwd="$HOME/src/nix/nix-config" size="25%" {
+                    args "rebuild"
+                    start_suspended true
+                }
+            }
+        }
+        floating_panes {
+            pane cwd="src/nix/nix-config" {
+                height 44
+                width 173
+                x 87
+                y 23
+            }
+        }
+    }
+    tab name="4 Wiki" hide_floating_panes=true {
+        pane size=1 borderless=true {
+            plugin location="compact-bar"
+        }
+        pane split_direction="vertical" {
+            pane command="nvim" cwd="$HOME/src/abbot-wiki" size="50%" {
+                start_suspended false
+            }
+            pane cwd="$HOME/src/abbot-wiki" size="50%"
+        }
+
+    }
+    tab name="5 FidgetingBits" hide_floating_panes=true {
+        pane size=1 borderless=true {
+            plugin location="compact-bar"
+        }
+        pane split_direction="vertical" {
+           // pane command="nvim" cwd="$HOME/pub/src/nix/fidgetingbits" size="50%" {
+            //     start_suspended true
+            // }
+            pane cwd="$HOME/pub/src/nix/fidgetingbits" size="50%"
+            pane cwd="$HOME/pub/src/nix/fidgetingbits" size="50%"
+        }
+    }
+   new_tab_template {
+        pane size=1 borderless=true {
+            plugin location="compact-bar"
+        }
+        pane cwd="$HOME"
+    }
+}
